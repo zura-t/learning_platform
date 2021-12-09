@@ -14,6 +14,9 @@ export class User {
 
   @Column({type: "text"})
   password: string;
+  
+  @Column({type: "text"})
+  role: string;
 
   @Column({type: "text", nullable: true})
   username: string;
@@ -56,5 +59,5 @@ export class User {
 
   @ManyToOne(() => Role, role => role)
   @JoinColumn()
-  role: string;
+  role_: string;
 }

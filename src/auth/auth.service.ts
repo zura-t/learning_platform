@@ -13,7 +13,7 @@ export class AuthService {
     ) {}
 
   async login(user: any) {
-    const payload = {name: user.name, id: user.id};
+    const payload = {name: user.name, id: user.id, role: user.role};
     return {
       payload, 
       access_token: this.jwtService.sign(payload, {secret: process.env.SECRET_KEY})
@@ -27,6 +27,10 @@ export class AuthService {
     }
     const hashPassword = await bcrypt.hash(registerDto.password, 5)
     const user = await this.userService.createStudent({...registerDto, password: hashPassword});
+    return {
+      user, 
+      access_token: this.jwtService.sign({name: user.name, id: user.id, role: user.role}, {secret: process.env.SECRET_KEY})
+    };
     return user;
   }
 

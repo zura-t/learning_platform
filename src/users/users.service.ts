@@ -38,7 +38,7 @@ export class UsersService {
 
       user = await this.userRepository.save({...dto, role: 'student parent', role_id: roleParent.id});
     } else {
-      const roleStudent = await this.roleService.getRoleByValue('student')
+      const roleStudent = await this.roleService.getRoleByValue('student');
 
       user = await this.userRepository.save({...dto, role: 'student', role_id: roleStudent.id});
     }
@@ -48,7 +48,8 @@ export class UsersService {
 
   async createUserByAdmin(dto: CreateUserDto) {
     const role = await this.roleService.getRoleByValue(dto.role);
-    const user = await this.userRepository.save({...dto, role_id: role.id});
+    
+    const user = await this.userRepository.save({...dto, password: "123", role_id: role.id});
     return user;
   }
 

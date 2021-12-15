@@ -10,7 +10,7 @@ export class RegisterStudentDto {
   readonly name: string;
   readonly username?: string;
   readonly email: string;
-  readonly password: string;
+  readonly password?: string;
   readonly mobile_phone?: string;
   readonly is_parent?: boolean;
   readonly child_info?: {
@@ -32,6 +32,6 @@ export class CreateTeacherDto {
   readonly name: string;
   readonly username?: string;
   readonly email: string;
-  readonly mobile_phone: string;
+  readonly mobile_phone?: string;
   readonly avatar?: string;
 }

@@ -24,8 +24,8 @@ export class UsersController {
     return this.usersService.getUserById(id);
   }
 
-  @Roles(Role.Admin)
-  @Post()
+  // @Roles(Role.Admin)
+  @Post('create')
   createUserByAdmin(@Body() dto: CreateUserDto) {
     return this.usersService.createUserByAdmin(dto);
   }

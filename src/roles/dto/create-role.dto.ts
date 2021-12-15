@@ -1,4 +1,4 @@
 export class CreateRoleDto {
   readonly value: string;
-  readonly availability: string;
+  readonly availability: string[];
 }

@@ -9,8 +9,13 @@ export class RolesService {
   constructor(@InjectRepository(Role) private roleRepository: Repository<Role>) {}
 
   async getAllRoles() {
-    const roles = await this.roleRepository.find()
+    const roles = await this.roleRepository.find();
     return roles;
+  }
+
+  async getRoleByValue(value: string) {
+    const role = await this.roleRepository.findOne({value});
+    return role;
   }
 
   async createRole(dto) {

@@ -10,6 +10,9 @@ import { ConfigModule } from '@nestjs/config';
 import { APP_GUARD } from '@nestjs/core';
 import { RolesGuard } from './auth/guards/roles.guard';
 import { JwtAuthGuard } from './auth/guards/jwt-auth.guard';
+import { ChatModule } from './chat/chat.module';
+import { ChatRoom } from './entity/chatRooms.entity';
+import { Message } from './entity/messages.entity';
 
 @Module({
   imports: [
@@ -24,7 +27,7 @@ import { JwtAuthGuard } from './auth/guards/jwt-auth.guard';
       username: process.env.POSTGRES_USER,
       password: process.env.POSTGRES_PASSWORD,
       database: process.env.POSTGRES_DB,
-      entities: [User, Role],
+      entities: [User, Role, ChatRoom, Message],
       synchronize: true,
       autoLoadEntities: true,
     }),
@@ -32,6 +35,7 @@ import { JwtAuthGuard } from './auth/guards/jwt-auth.guard';
     UsersModule,
     RolesModule,
     AuthModule,
+    ChatModule,
   ],
   controllers: [AppController],
   providers: [

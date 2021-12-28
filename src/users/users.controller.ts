@@ -1,10 +1,7 @@
 import { Body, Controller, Delete, Get, Param, Post, Request, UseGuards } from '@nestjs/common';
-import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
-import { LocalAuthGuard } from 'src/auth/guards/local-auth.guard';
-import { RolesGuard } from 'src/auth/guards/roles.guard';
 import { Role } from 'src/roles/role.enum';
 import { Roles } from 'src/auth/decorators/roles.decorator';
-import { CreateUserDto, RegisterStudentDto } from './dto/create-user.dto';
+import { CreateUserDto, RegisterStudentDto } from './dto/user.dto';
 import { UsersService } from './users.service';
 import { Public } from 'src/auth/decorators/public.decorator';
 
@@ -25,6 +22,7 @@ export class UsersController {
   }
 
   // @Roles(Role.Admin)
+  @Public()
   @Post('create')
   createUserByAdmin(@Body() dto: CreateUserDto) {
     return this.usersService.createUserByAdmin(dto);

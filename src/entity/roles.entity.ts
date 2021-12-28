@@ -3,7 +3,7 @@ import { User } from './users.entity';
 
 @Entity({ name: 'roles' })
 export class Role {
-  @PrimaryGeneratedColumn({ type: 'int' })
+  @PrimaryGeneratedColumn({type: "int"})
   id: number;
 
   @Column({ type: 'text', unique: true })
@@ -12,6 +12,6 @@ export class Role {
   @Column({ type: 'text', array: true })
   availability: Array<string>;
 
-  @OneToMany(() => User, user => user.role_)
+  @OneToMany(() => User, user => user.role_id)
   users: User[];
 }

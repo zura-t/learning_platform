@@ -1,6 +1,6 @@
 import { Body, Controller, Get, HttpException, HttpStatus, Post, Req, Request, UseGuards } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
-import { CreateUserDto, LoginDto, RegisterStudentDto } from 'src/users/dto/create-user.dto';
+import { CreateUserDto, LoginDto, RegisterStudentDto } from 'src/users/dto/user.dto';
 import { AuthService } from './auth.service';
 import { Public } from './decorators/public.decorator';
 import { LocalAuthGuard } from './guards/local-auth.guard';

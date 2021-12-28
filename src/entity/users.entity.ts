@@ -1,9 +1,11 @@
-import { Entity, Column, PrimaryGeneratedColumn, ManyToOne, JoinColumn } from "typeorm";
+import { Entity, Column, PrimaryGeneratedColumn, ManyToOne, JoinColumn, OneToMany, ManyToMany } from "typeorm";
+import { ChatRoom } from "./chatRooms.entity";
+import { Message } from "./messages.entity";
 import { Role } from "./roles.entity";
 
 @Entity({name: 'users'})
 export class User {
-  @PrimaryGeneratedColumn()
+  @PrimaryGeneratedColumn({type: "int"})
   id: number;
 
   @Column({type: "text", unique: true})
@@ -57,7 +59,16 @@ export class User {
   @Column({type: "text", nullable: true})
   used_space: string;
 
-  @ManyToOne(() => Role, role => role)
-  @JoinColumn()
-  role_: string;
+  @ManyToOne(() => Role, role => role.users)
+  @JoinColumn({name: "role_id"})
+  role_id: number;
+
+  @ManyToMany(() => ChatRoom, chatRoom => chatRoom.users)
+  chatRooms: ChatRoom[];
+
+  @OneToMany(() => Message, message => message.owner)
+  messages: Message[];
+
+  @OneToMany(() => Message, message => message.to_who)
+  messages_to_me: Message[];
 }

@@ -1,12 +1,12 @@
 import { Body, Controller, Get, Param, Post, Query } from '@nestjs/common';
-import { Public } from 'src/auth/decorators/public.decorator';
+import { Public } from 'src/decorators/public.decorator';
 import { ChatGateway } from './chat.gateway';
 import { ChatService } from './chat.service';
 import { RoomDto } from './dto/chat.dto';
 
 @Controller('chat')
 export class ChatController {
-  constructor(private chatService: ChatService, private chatGateway: ChatGateway) {}
+  constructor(private chatService: ChatService) {}
 
   @Public()
   @Get('rooms')

@@ -51,7 +51,10 @@ export class User {
   website: string;
 
   @Column({type: "text", array: true, nullable: true})
-  social_links: Array<string>;
+  social_links: {social_network: string, value: string}[];
+
+  @Column({type: "text", array: true, nullable: true})
+  notifications: {messages: boolean, homework: boolean, invoices: boolean}[];
   
   @Column({type: "text", nullable: true})
   storage_space: string;

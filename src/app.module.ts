@@ -8,11 +8,12 @@ import { Role } from './entity/roles.entity';
 import { AuthModule } from './auth/auth.module';
 import { ConfigModule } from '@nestjs/config';
 import { APP_GUARD } from '@nestjs/core';
-import { RolesGuard } from './auth/guards/roles.guard';
-import { JwtAuthGuard } from './auth/guards/jwt-auth.guard';
+import { RolesGuard } from './guards/roles.guard';
+import { JwtAuthGuard } from './guards/jwt-auth.guard';
 import { ChatModule } from './chat/chat.module';
 import { ChatRoom } from './entity/chatRooms.entity';
 import { Message } from './entity/messages.entity';
+import { FilesModule } from './files/files.module';
 
 @Module({
   imports: [
@@ -36,6 +37,7 @@ import { Message } from './entity/messages.entity';
     RolesModule,
     AuthModule,
     ChatModule,
+    FilesModule,
   ],
   controllers: [AppController],
   providers: [

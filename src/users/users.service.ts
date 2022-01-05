@@ -1,14 +1,20 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { User } from 'src/entity/users.entity';
+import { FilesService } from 'src/files/files.service';
 import { RolesService } from 'src/roles/roles.service';
-import { Repository } from 'typeorm';
-import { CreateUserDto, RegisterStudentDto } from './dto/user.dto';
+import { getConnection, Repository } from 'typeorm';
+import { CreateUserDto, RegisterStudentDto, UpdateUserDto } from './dto/user.dto';
+import * as bcrypt from 'bcryptjs';
 
 @Injectable()
 export class UsersService {
 
-  constructor(@InjectRepository(User) private userRepository: Repository<User>, private roleService: RolesService) {}
+  constructor(
+    @InjectRepository(User) private userRepository: Repository<User>, 
+    private roleService: RolesService,
+    private filesService: FilesService
+    ) {}
 
   async getAllUsers() {
     const users = await this.userRepository.find();
@@ -34,30 +40,54 @@ export class UsersService {
     let user;
     if (dto.is_parent) {
       const roleParent = await this.roleService.getRoleByValue('student parent');
-      const roleChild = await this.roleService.getRoleByValue('student child');
-
       user = await this.userRepository.save({...dto, role: 'student parent', role_id: roleParent.id});
     } else {
       const roleStudent = await this.roleService.getRoleByValue('student');
-
       user = await this.userRepository.save({...dto, role: 'student', role_id: roleStudent.id});
     }
-    
     return user;
   }
 
   async createUserByAdmin(dto: CreateUserDto) {
     const role = await this.roleService.getRoleByValue(dto.role);
-    
-    const user = await this.userRepository.save({...dto, password: "123", role_id: role.id});
+    const hashPassword = await bcrypt.hash('123', 5);
+    const user = await this.userRepository.save({...dto, password: hashPassword, role_id: role.id});
     return user;
   }
 
-  async updateUser(dto) {
-    const user = await this.userRepository.save({...dto});
-    console.log(user);
-    
-    return user;
+  async changePassword(userId, oldPassword, newPassword) {
+    const user = await this.getUserById(userId);
+    const passwordEquals = await bcrypt.compare(oldPassword, user.password);
+    if (user && passwordEquals && newPassword) {
+      const hashPassword = await bcrypt.hash(newPassword, 5);
+      user.password = hashPassword;
+      await this.userRepository.save(user);
+      return 'password changed';
+    }
+  }
+
+  async updateUser(id, dto: UpdateUserDto, file?) {
+    if (file) {
+      const user = await this.getUserById(id);
+      if (user.avatar) {
+        this.filesService.deleteFile(user.avatar);
+      }
+      const avatar = await this.filesService.createFile(file);
+      dto.avatar = avatar;
+    }
+    if (dto.avatar === null) {
+      const user = await this.getUserById(id);
+      if (user.avatar) {
+        this.filesService.deleteFile(user.avatar)
+      }
+    }
+    await getConnection()
+    .createQueryBuilder()
+    .update(User)
+    .set({...dto})
+    .where("id = :id", {id})
+    .execute();
+    return 'Данные пользователя обновлены';
   }
 
   async deleteAllUsers() {

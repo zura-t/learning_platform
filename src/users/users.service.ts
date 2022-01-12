@@ -17,7 +17,7 @@ export class UsersService {
     ) {}
 
   async getAllUsers() {
-    const users = await this.userRepository.find();
+    const users = await this.userRepository.find({relations: ["chatRooms"]});
     return users;
   }
   
@@ -93,5 +93,6 @@ export class UsersService {
   async deleteAllUsers() {
     const users = await this.userRepository.find();
     this.userRepository.remove(users);
+    return 'users deleted';
   }
 }

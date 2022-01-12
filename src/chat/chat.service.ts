@@ -7,7 +7,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { ChatRoom } from 'src/entity/chatRooms.entity';
 import { Message } from 'src/entity/messages.entity';
 import { User } from 'src/entity/users.entity';
-import { DeepPartial, getConnection, In, Repository } from 'typeorm';
+import { DeepPartial, getConnection, getManager, In, Repository } from 'typeorm';
 import { ChatGateway } from './chat.gateway';
 import { MessageDto, RoomDto } from './dto/chat.dto';
 
@@ -25,7 +25,7 @@ export class ChatService {
     return rooms;
   }
 
-  async getMessages(room_id: number, users: number[]) {
+  async getMessages(room_id: number) {
     if (!room_id) {
       throw new NotFoundException({
         code: 'room.not-fond',
@@ -39,9 +39,26 @@ export class ChatService {
   }
 
   async createMessage(messageDto: MessageDto) {
+    const room = await this.chatRoomRepository.findOne(messageDto.chat_id, {relations: ["users", "messages"]});
+    if (!room) {
+      throw new ConflictException({
+        message: "The room doesn't exists"
+      });
+    }
+    let roomContainsUsers = true;
+    room.users.forEach(user => {
+      if (user.id !== messageDto.owner && user.id !== messageDto.to_who) {
+        roomContainsUsers = false;
+      }
+    })
+    if (!roomContainsUsers) {
+      throw new ConflictException({
+        message: 'Some id is wrong'
+      });
+    }
+    
     const message = await this.messageRepository.save({...messageDto});
     
-    const room = await this.chatRoomRepository.findOne(message.chat_id, {relations: ["messages"]});
     room.messages.push(message);
 
     await this.chatRoomRepository.save(room);
@@ -59,28 +76,41 @@ export class ChatService {
 
   async createRoom(room: RoomDto) {
     try {
-      const users = await this.userRepository.findByIds(room.users, {relations: ["chatRooms"]})
+      const users = await this.userRepository.findByIds(room.users, {relations: ["chatRooms"]});
 
-      // const roomExists = await this.chatRoomRepository.find({where: {users}, relations: ["users"]});
-      // console.log(roomExists);
+      if (users.length !== 2) {
+        throw new ConflictException({
+          message: `User not found`,
+        });
+      };
+
+      const roomExists = await getManager().query(
+        `SELECT cu."chatRoomsId" FROM "chatRooms_users" cu 
+        left join users on users.id=cu."usersId" 
+        where users.id IN (${room.users[0]}, ${room.users[1]})
+        GROUP BY cu."chatRoomsId"
+        HAVING COUNT(*) = 2`
+      );
       
-      // if (roomExists) {
-      //   console.log('room already exists');
-  
-      //   throw new ConflictException({
-      //     code: 'room.conflict',
-      //     message: `The room already exists`,
-      //   });
-      // };
+      if (roomExists.length) {
+        throw new ConflictException({
+          code: 'room.conflict',
+          message: `The room already exists`,
+        });
+      };
       
       const newRoom = await this.chatRoomRepository.save({ ...room, users });
-      
-      users.map((user) => (user.chatRooms.push(newRoom)));
-      await this.userRepository.save(users)
 
       return newRoom;
     } catch (error) {
       console.log(error);
     }
+  }
+
+  async deleteAllRooms() {
+    const users = await this.userRepository.find();
+    users.map(user => user.chatRooms = []);
+    await this.userRepository.save(users);
+    return 'rooms deleted';
   }
 }

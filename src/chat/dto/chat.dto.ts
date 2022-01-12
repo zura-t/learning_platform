@@ -29,7 +29,7 @@ export interface Participant {
 }
 
 export class RoomDto {
-  id: number;
+  id?: number;
   messages?: any[];
   users: any[];
 }

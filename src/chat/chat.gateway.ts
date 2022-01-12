@@ -1,4 +1,4 @@
-import { MessageBody, SubscribeMessage, WebSocketGateway, WebSocketServer } from "@nestjs/websockets";
+import { ConnectedSocket, MessageBody, SubscribeMessage, WebSocketGateway, WebSocketServer } from "@nestjs/websockets";
 import { Server } from "http";
 import {Socket} from "socket.io"
 import { ChatService } from "./chat.service";
@@ -19,23 +19,16 @@ export class ChatGateway {
     console.log('someone connected', socket.id);
   }
 
-  @SubscribeMessage('first_message')
-  async firstMessage(socket: Socket, data) {
-      console.log('first message');
-      
-      const message: MessageDto = data.message;
-      const roomDto: RoomDto = data.roomDto;
-      const newRoom = await this.chatService.createRoom(roomDto);
-      message.chat_id = newRoom.id;
-      const newMessage = await this.chatService.createMessage(message);
-
-      this.server.emit('first_message', newMessage, newRoom);
+  @SubscribeMessage('join room')
+  async joinRoom(@ConnectedSocket() socket: Socket, @MessageBody() {chat_id}) {
+    socket.join(String(chat_id));
   }
 
   @SubscribeMessage('send_message')
-  async handleMessage(@MessageBody('message') message: MessageDto) {
-    console.log('new message');
+  async handleMessage(@ConnectedSocket() socket: Socket, @MessageBody('message') message: MessageDto) {
+    console.log(socket.rooms);
     const newMessage = await this.chatService.createMessage(message);
-    this.server.emit('send_message', newMessage);
+    socket.broadcast.to(String(message.chat_id)).emit('send_message', {newMessage});
+    socket.emit('send_message', {newMessage});
   }
 }
